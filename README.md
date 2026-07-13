@@ -18,3 +18,18 @@ helm install airflow apache-airflow/airflow \
 ```bash
 kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow
 ```
+
+# POSTGRES TARGET
+## criar secret postgresql-target
+```bash
+kubectl create secret generic postgres-credentials \
+  --from-literal=username=ESCOLHA_UM_USERNAME \
+  --from-literal=password=ESCOLHA_UM_PASSWORD \
+  --from-literal=dbname=banvic_dw \
+  -n airflow
+```
+
+## implantar
+```bash
+kubectl apply -f k8s/postgres/
+```

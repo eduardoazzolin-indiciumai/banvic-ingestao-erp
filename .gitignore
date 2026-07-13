@@ -10,3 +10,6 @@ __pycache__/
 # dbt logs e temporários
 transform/target/
 transform/dbt_packages/
+
+# draw.io
+*.drawio.bkp
