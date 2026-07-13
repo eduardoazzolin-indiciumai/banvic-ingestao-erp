@@ -1,0 +1,10 @@
+# Altera para LocalExecutor (consome muito menos memória que o CeleryExecutor padrão)
+executor: "LocalExecutor"
+
+# Desativa recursos que você não vai usar no momento para poupar RAM
+postgresql:
+  enabled: true # Mantém o Postgres interno apenas para os metadados do Airflow
+  image:
+    repository: bitnamilegacy/postgresql # Aponta para o arquivo morto onde a tag existe
+    tag: "16.1.0-debian-11-r15"
+
