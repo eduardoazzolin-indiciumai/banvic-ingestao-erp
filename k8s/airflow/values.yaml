@@ -8,3 +8,20 @@ postgresql:
     repository: bitnamilegacy/postgresql # Aponta para o arquivo morto onde a tag existe
     tag: "16.1.0-debian-11-r15"
 
+webserver:
+  defaultUser:
+    enabled: true
+    role: Admin
+    username: admin
+    email: admin@banvic.com
+    firstName: Admin
+    lastName: BanVic
+    password: "$(ADMIN_PASSWORD)"
+
+createUserJob:
+  env:
+    - name: ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: airflow-webserver-password
+          key: password
