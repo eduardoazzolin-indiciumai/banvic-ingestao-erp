@@ -1,0 +1,37 @@
+in:
+  type: file
+  path_prefix: ../../data/colaborador_agencia.csv
+  parser:
+    type: csv
+    delimiter: ','
+    quote: '"'
+    escape: '"'
+    header_line: true
+    charset: UTF-8
+    newline: LF
+    trim_if_not_quoted: false
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: cod_colaborador, type: long}
+    - {name: cod_agencia, type: long}
+
+filters:
+  - type: add_time
+    to_column:
+      name: _ingested_at_ts
+      type: timestamp
+    from_value:
+      mode: upload_time
+
+out:
+  type: postgresql
+  host: postgres-target.airflow.svc.cluster.local
+  user: banvic_dw_user
+  password: "{ env.DB_PASSWORD }"
+  database: banvic_dw
+  schema: stage
+  table: stg_colaborador_agencia
+  mode: replace
+  port: 5432
+  driver_path: /app/bin/postgresql-42.7.3.jar

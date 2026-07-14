@@ -82,14 +82,34 @@ kubectl create secret generic postgres-credentials \
 kubectl apply -f k8s/postgres/
 ```
 
----
+#### 5. Configurar o Embulk
+
+#### 5.1. Gerar imagem do embulk
+
+```bash
+eval $(minikube docker-env)
+docker build -t embulk-ingestion:latest ./ingestion
+```
 
 ### Acessar os serviços
 
 ```bash
-kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow
+# airflow
+kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow > /dev/null 2>&1 &
+
+# postgres target
+kubectl port-forward svc/postgres-target 5432:5432 --namespace airflow > /dev/null 2>&1 &
+
+# parar port-forward
+killall kubectl
 ```
 
 ```bash
-kubectl port-forward svc/postgres-target 5432:5432 --namespace airflow
+# 1. Copia para o Scheduler (para o código rodar)
+kubectl cp ./dags airflow-scheduler-0:/opt/airflow -n airflow
+
+# 2. Copia para o Webserver dinamicamente (para o código aparecer na tela)
+kubectl cp ./dags $(kubectl get pods -n airflow -l component=webserver -o jsonpath='{.items[0].metadata.name}'):/opt/airflow -n airflow
+
+kubectl exec -it airflow-scheduler-0 -n airflow -- airflow dags reserialize
 ```
