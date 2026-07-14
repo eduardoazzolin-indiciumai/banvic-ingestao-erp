@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres-target
-  namespace: airflow
+  namespace: dw
 spec:
   selector:
     app: postgres-target

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: sftp-server
-  namespace: airflow
+  namespace: sftp
 spec:
   selector:
     app: sftp-server
@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: sftp-server
-  namespace: airflow
+  namespace: sftp
 spec:
   replicas: 1
   selector:

@@ -13,3 +13,6 @@ transform/dbt_packages/
 
 # draw.io
 *.drawio.bkp
+
+# python
+.env
