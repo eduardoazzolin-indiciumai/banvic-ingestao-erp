@@ -1,2 +1,0 @@
-# Ignorar qualquer arquivo que não seja .py
-.*(?<!\.py)$

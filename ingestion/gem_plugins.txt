@@ -1,2 +1,4 @@
 gem 'embulk-output-postgresql'
 gem 'embulk-filter-add_time'
+gem 'embulk-input-sftp'
+gem 'liquid'

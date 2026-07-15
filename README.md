@@ -115,17 +115,14 @@ kubectl exec -it airflow-scheduler-0 -n airflow -- airflow connections add 'sftp
 #### Copiar DAGs
 Em produção utilizaria um gitsync
 ```bash
-# 1. Copia para o Scheduler (para o código rodar)
+kubectl exec -it airflow-scheduler-0 -n airflow -- sh -c "rm -rf /opt/airflow/dags/*"
 kubectl cp ./dags airflow-scheduler-0:/opt/airflow -n airflow
 
-# 2. Copia para o Webserver dinamicamente (para o código aparecer na tela)
+kubectl exec -it $(kubectl get pods -n airflow -l component=webserver -o jsonpath='{.items[0].metadata.name}') -n airflow -- sh -c "rm -rf /opt/airflow/dags/*"
 kubectl cp ./dags $(kubectl get pods -n airflow -l component=webserver -o jsonpath='{.items[0].metadata.name}'):/opt/airflow -n airflow
 
 kubectl exec -it airflow-scheduler-0 -n airflow -- airflow dags reserialize
 ```
-
-#### Criar Connections
-
 
 
 
@@ -147,6 +144,12 @@ kubectl port-forward svc/airflow-webserver 8080:8080 --namespace airflow > /dev/
 
 # postgres target
 kubectl port-forward svc/postgres-target 5432:5432 --namespace dw > /dev/null 2>&1 &
+
+
+# postgres target
+kubectl port-forward svc/sftp-server 2222:22 --namespace sftp > /dev/null 2>&1 &
+
+
 
 # parar port-forward
 ```

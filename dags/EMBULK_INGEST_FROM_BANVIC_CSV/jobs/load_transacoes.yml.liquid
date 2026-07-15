@@ -1,6 +1,10 @@
 in:
-  type: file
-  path_prefix: ../../data/transacoes.csv
+  type: sftp
+  host: "{{ env.SFTP_HOST }}"
+  user: "{{ env.SFTP_USER }}"
+  password: "{{ env.SFTP_PASSWORD }}"
+  port: 22
+  path_prefix: /upload/data/transacoes
   parser:
     type: csv
     delimiter: ','
@@ -15,9 +19,9 @@ in:
     columns:
     - {name: cod_transacao, type: long}
     - {name: num_conta, type: long}
-    - {name: data_transacao, type: timestamp, format: '%Y-%m-%d %H:%M:%S %z'}
+    - {name: data_transacao, type: string}
     - {name: nome_transacao, type: string}
-    - {name: valor_transacao, type: long}
+    - {name: valor_transacao, type: double}
 
 filters:
   - type: add_time
@@ -29,12 +33,12 @@ filters:
 
 out:
   type: postgresql
-  host: postgres-target.airflow.svc.cluster.local
-  user: banvic_dw_user
-  password: "{ env.DB_PASSWORD }"
-  database: banvic_dw
+  host: "{{ env.DB_HOST }}"
+  user: "{{ env.DB_USER }}"
+  password: "{{ env.DB_PASSWORD }}"
+  database: "{{ env.DB_NAME }}"
   schema: stage
   table: stg_transacoes
   mode: replace
-  port: 5432
-  driver_path: /app/bin/postgresql-42.7.3.jar
+  port: "{{ env.DB_PORT }}"
+  driver_path: /opt/embulk/drivers/postgresql-42.7.3.jar
