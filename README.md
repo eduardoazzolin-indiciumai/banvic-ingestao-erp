@@ -79,6 +79,8 @@ banvic_dw (Database)
 
 Certifique-se de ter as seguintes ferramentas instaladas localmente antes de prosseguir:
 
+> ⚠️ **Importante**: Os comandos do README.md estão voltados para distribuições **Ubuntu**, portanto é fortemente recomendado usar Ubuntu ou [WSL](https://learn.microsoft.com/pt-br/windows/wsl/install) no Windows.
+
 - [Docker](https://docs.docker.com/get-docker/)
 - [Minikube](https://minikube.sigs.k8s.io/docs/start/)
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/)
@@ -270,4 +272,4 @@ kubectl port-forward svc/sftp-server 2222:22 --namespace sftp > /dev/null 2>&1 &
 
 Agora use o link abaixo para acessar o Airflow:
 
-> http://localhost:8080/
+> ✅ http://localhost:8080/
