@@ -4,7 +4,7 @@ in:
   user: "{{ env.SFTP_USER }}"
   password: "{{ env.SFTP_PASSWORD }}"
   port: 22
-  path_prefix: /upload/data/colaboradores.csv
+  path_prefix: /upload/data/clientes.csv
   parser:
     type: csv
     delimiter: ','
@@ -17,11 +17,13 @@ in:
     allow_extra_columns: false
     allow_optional_columns: false
     columns:
-    - {name: cod_colaborador, type: long}
+    - {name: cod_cliente, type: long}
     - {name: primeiro_nome, type: string}
     - {name: ultimo_nome, type: string}
     - {name: email, type: string}
-    - {name: cpf, type: string}
+    - {name: tipo_cliente, type: string}
+    - {name: data_inclusao, type: timestamp, format: '%Y-%m-%d %H:%M:%S %z'}
+    - {name: cpfcnpj, type: string}
     - {name: data_nascimento, type: timestamp, format: '%Y-%m-%d'}
     - {name: endereco, type: string}
     - {name: cep, type: string}
@@ -40,8 +42,8 @@ out:
   user: "{{ env.DB_USER }}"
   password: "{{ env.DB_PASSWORD }}"
   database: "{{ env.DB_NAME }}"
-  schema: stage
-  table: stg_colaboradores
+  schema: staging_erp
+  table: stg_clientes
   mode: replace
   port: "{{ env.DB_PORT }}"
   driver_path: /opt/embulk/drivers/postgresql-42.7.3.jar

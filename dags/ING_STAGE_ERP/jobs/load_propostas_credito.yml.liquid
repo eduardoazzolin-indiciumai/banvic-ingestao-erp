@@ -4,7 +4,7 @@ in:
   user: "{{ env.SFTP_USER }}"
   password: "{{ env.SFTP_PASSWORD }}"
   port: 22
-  path_prefix: /upload/data/contas.csv
+  path_prefix: /upload/data/propostas_credito.csv
   parser:
     type: csv
     delimiter: ','
@@ -17,15 +17,18 @@ in:
     allow_extra_columns: false
     allow_optional_columns: false
     columns:
-    - {name: num_conta, type: long}
+    - {name: cod_proposta, type: long}
     - {name: cod_cliente, type: long}
-    - {name: cod_agencia, type: long}
     - {name: cod_colaborador, type: long}
-    - {name: tipo_conta, type: string}
-    - {name: data_abertura, type: string}
-    - {name: saldo_total, type: double}
-    - {name: saldo_disponivel, type: double}
-    - {name: data_ultimo_lancamento, type: string}
+    - {name: data_entrada_proposta, type: timestamp, format: '%Y-%m-%d %H:%M:%S %z'}
+    - {name: taxa_juros_mensal, type: double}
+    - {name: valor_proposta, type: double}
+    - {name: valor_financiamento, type: double}
+    - {name: valor_entrada, type: double}
+    - {name: valor_prestacao, type: double}
+    - {name: quantidade_parcelas, type: long}
+    - {name: carencia, type: long}
+    - {name: status_proposta, type: string}
 
 filters:
   - type: add_time
@@ -41,8 +44,8 @@ out:
   user: "{{ env.DB_USER }}"
   password: "{{ env.DB_PASSWORD }}"
   database: "{{ env.DB_NAME }}"
-  schema: stage
-  table: stg_contas
+  schema: staging_erp
+  table: stg_propostas_credito
   mode: replace
   port: "{{ env.DB_PORT }}"
   driver_path: /opt/embulk/drivers/postgresql-42.7.3.jar
