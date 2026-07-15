@@ -6,6 +6,8 @@ Este projeto foi desenvolvido como parte do desafio de certificação de Data En
 
 ## 🏗️ Arquitetura
 
+![Archtecture_Diagram](./public/architecture_diagram.gif)
+
 A solução foi arquitetada utilizando **Infraestrutura como Código (IaC)** e conteinerização orquestrada via **Kubernetes (Minikube)**.
 
 - **Origem (Source):** Servidor SFTP simulando os sistemas legados/ERP.
