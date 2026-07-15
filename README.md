@@ -8,12 +8,30 @@ Este projeto foi desenvolvido como parte do desafio de certificação de Data En
 
 ![Archtecture_Diagram](./public/architecture_diagram.gif)
 
+### 1. Containerização
+
 A solução foi arquitetada utilizando **Infraestrutura como Código (IaC)** e conteinerização orquestrada via **Kubernetes (Minikube)**.
 
-- **Origem (Source):** Servidor SFTP simulando os sistemas legados/ERP.
-- **Ingestão (ELT):** Embulk conteinerizado para extração e carga eficiente.
-- **Destino (Target):** Banco de Dados PostgreSQL atuando como o Data Warehouse (DW).
-- **Orquestração:** Apache Airflow executando DAGs para sequenciar e monitorar as tarefas de carga.
+### 2. Fonte dos dados - SFTP
+
+Para simular um ambiente real, foi criado um **ambiente SFTP** no kubernetes, no qual idealmente o ERP legado da Banvic gravaria os arquivos CSV.
+
+### 3. Embulk - Ingestão CSV
+
+No projeto, foi criada uma imagem do Embulk preparada para receber as instruções (config.yml) em base64 como argumento de execução. Desta forma, a imagem fica imutável e as configurações de ingestão, desacopladas. Foi selecionado o Embulk devido à simplicidade para ingerir dados CSV e gravar em um banco de dados. Caso a origem fosse uma API, a escolha teria sido Meltano pela flexibilidade.
+
+### 4. PostgreSQL - Destino dos dados
+
+Entre as sugestões do desafio (PostgreSQL ou MinIO), foi escolhido o PostgreSQL pela facilidade de manipulação em dados estruturados.
+
+### 5. Airflow - Orquestração
+
+Toda a orquestração dos containers de Embulk e do acionamento das transformações no PostgreSQL ficaram à cargo do Airflow. Foram criadas duas DAGs:
+
+- `ING_STAGE_ERP`: é acionada diariamente na madrugada e é responsável por criar pods Embulk temporários no kubernetes passando as configurações de cada extração.
+- `EXP_INTERMEDIATE_ERP`: é acionada quando a DAG de ingestão produz um _dataset airflow_ e é responsável por executar comandos SQL de transformação no PostgreSQL.
+
+> ℹ️ **Débito técnico**: para simplificar o projeto sem deixar o repositório público, durante a criação dos pods do Airflow, as DAGs são copiadas com o comando `cp` para dentro do ambiente. Em cenários de produção seria utilizado abordagens como `Git-Sync` para sincronizar as dags com o repositório online.
 
 ## 🗂️ Estrutura do Projeto
 
@@ -23,35 +41,9 @@ A solução foi arquitetada utilizando **Infraestrutura como Código (IaC)** e c
 - `k8s/`: Manifestos Kubernetes para Airflow, PostgreSQL e servidor SFTP.
 - `public/`: Documentação, diagramas e instruções do desafio.
 
-## 📊 Dados e Transformações
+## 📊 Resultado Final de Dados
 
-O pipeline de dados orquestrado pelo Apache Airflow é estruturado em duas etapas principais (DAGs), refletindo as boas práticas de extração, carga e transformação (ELT):
-
-### 1. Ingestão (ING_STAGE_ERP)
-
-Responsável por extrair os dados brutos (arquivos CSV) do servidor SFTP (simulando o ERP) e carregá-los de forma eficiente no schema de Staging do Data Warehouse PostgreSQL utilizando o Embulk.
-
-**Entidades Ingeridas:**
-
-- `agencias`
-- `clientes`
-- `colaboradores`
-- `colaborador_agencia`
-- `contas`
-- `propostas_credito`
-- `transacoes`
-
-### 2. Transformação (EXP_INTERMEDIATE_ERP)
-
-Após a carga na área de staging, esta DAG executa rotinas SQL para limpar e modelar os dados em um formato analítico, visando a construção de um modelo dimensional adequado para relatórios e dashboards comerciais.
-
-**Modelagem Dimensional (Fatos e Dimensões):**
-
-- **Dimensões:** `int_dim_agencias`, `int_dim_clientes`, `int_dim_colaboradores`
-- **Fatos:** `int_fct_propostas_credito`, `int_fct_transacoes`
-- **Tabelas de suporte/intermediárias:** `int_contas`, `int_colaborador_agencia`
-
-### 3. Resultado Final do DW
+Após a carga sem transformações na área de staging pela DAG `ING_STAGE_ERP`, a DAG `EXP_INTERMEDIATE_ERP` executa rotinas SQL para limpar, tratar e modelar os dados em um formato star-schema.
 
 ```text
 banvic_dw (Database)
@@ -75,9 +67,14 @@ banvic_dw (Database)
             ├── stg_contas
             ├── stg_propostas_credito
             └── stg_transacoes
-```            
+```
 
-## ⚙️ Pré-requisitos
+
+## 🚀 Instalação e Configuração
+
+Siga as etapas abaixo rigorosamente para provisionar o ambiente local.
+
+### ⚙️ Pré-requisitos
 
 Certifique-se de ter as seguintes ferramentas instaladas localmente antes de prosseguir:
 
@@ -87,12 +84,6 @@ Certifique-se de ter as seguintes ferramentas instaladas localmente antes de pro
 - [Minikube](https://minikube.sigs.k8s.io/docs/start/)
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [Helm](https://helm.sh/docs/intro/install/)
-
----
-
-## 🚀 Instalação e Configuração
-
-Siga as etapas abaixo rigorosamente para provisionar o ambiente local.
 
 ### 1. Ambiente base
 
@@ -116,9 +107,9 @@ _Substitua "INSIRA_SENHA_SEGURA" por uma senha de sua preferência._
 ```bash
 kubectl create namespace sftp
 
-kubectl create secret generic sftp-credentials \\
-  --from-literal=password=INSIRA_SENHA_SEGURA \\
-  --from-literal=username=banvic_erp \\
+kubectl create secret generic sftp-credentials \
+  --from-literal=password=INSIRA_SENHA_SEGURA \
+  --from-literal=username=banvic_erp \
   -n sftp
 
 ```
@@ -150,10 +141,10 @@ _Substitua "INSIRA_SENHA_SEGURA" por uma senha de sua preferência._
 ```bash
 kubectl create namespace dw
 
-kubectl create secret generic postgres-credentials \\
-  --from-literal=password=INSIRA_SENHA_SEGURA \\
-  --from-literal=username=banvic_dw_user \\
-  --from-literal=dbname=banvic_dw \\
+kubectl create secret generic postgres-credentials \
+  --from-literal=password=INSIRA_SENHA_SEGURA \
+  --from-literal=username=banvic_dw_user \
+  --from-literal=dbname=banvic_dw \
   -n dw
 
 ```
@@ -176,8 +167,8 @@ _Substitua "INSIRA_SENHA_SEGURA" por uma senha de sua preferência._
 ```bash
 kubectl create namespace airflow
 
-kubectl create secret generic airflow-webserver-password \\
-  --from-literal=password=INSIRA_SENHA_SEGURA \\
+kubectl create secret generic airflow-webserver-password \
+  --from-literal=password=INSIRA_SENHA_SEGURA \
   -n airflow
 
 ```
@@ -187,9 +178,9 @@ kubectl create secret generic airflow-webserver-password \\
 Implantar via Helm chart (Versão airflow 2.10.5).
 
 ```bash
-helm install airflow apache-airflow/airflow \\
-  --version 1.16.0 \\
-  -f k8s/airflow/values.yaml \\
+helm install airflow apache-airflow/airflow \
+  --version 1.16.0 \
+  -f k8s/airflow/values.yaml \
   -n airflow
 
 ```
@@ -200,12 +191,12 @@ helm install airflow apache-airflow/airflow \\
 _Substitua "INSIRA_SENHA_SEGURA" pela mesma senha definida na criação do secret do DW._
 
 ```bash
-kubectl exec -it airflow-scheduler-0 -n airflow -- airflow connections add 'dw_postgres' \\
-  --conn-type 'postgres' \\
-  --conn-host 'postgres-target.dw.svc.cluster.local' \\
-  --conn-login 'banvic_dw_user' \\
-  --conn-password 'INSIRA_SENHA_SEGURA' \\
-  --conn-schema 'banvic_dw' \\
+kubectl exec -it airflow-scheduler-0 -n airflow -- airflow connections add 'dw_postgres' \
+  --conn-type 'postgres' \
+  --conn-host 'postgres-target.dw.svc.cluster.local' \
+  --conn-login 'banvic_dw_user' \
+  --conn-password 'INSIRA_SENHA_SEGURA' \
+  --conn-schema 'banvic_dw' \
   --conn-port '5432'
 
 ```
@@ -214,11 +205,11 @@ kubectl exec -it airflow-scheduler-0 -n airflow -- airflow connections add 'dw_p
 _Substitua "INSIRA_SENHA_SEGURA" pela mesma senha definida na criação do secret do SFTP._
 
 ```bash
-kubectl exec -it airflow-scheduler-0 -n airflow -- airflow connections add 'sftp_erp' \\
-  --conn-type 'sftp' \\
-  --conn-host 'sftp-server.sftp.svc.cluster.local' \\
-  --conn-login 'banvic_erp' \\
-  --conn-password 'INSIRA_SENHA_SEGURA' \\
+kubectl exec -it airflow-scheduler-0 -n airflow -- airflow connections add 'sftp_erp' \
+  --conn-type 'sftp' \
+  --conn-host 'sftp-server.sftp.svc.cluster.local' \
+  --conn-login 'banvic_erp' \
+  --conn-password 'INSIRA_SENHA_SEGURA' \
   --conn-port '22'
 
 ```
@@ -272,6 +263,6 @@ kubectl port-forward svc/sftp-server 2222:22 --namespace sftp > /dev/null 2>&1 &
 
 ```
 
-Agora use o link abaixo para acessar o Airflow:
+Utilize o link abaixo para acessar o Airflow:
 
 > ✅ http://localhost:8080/
