@@ -16,3 +16,6 @@ transform/dbt_packages/
 
 # python
 .env
+
+# drafts
+sandbox/

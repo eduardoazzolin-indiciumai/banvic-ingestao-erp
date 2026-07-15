@@ -1,0 +1,48 @@
+in:
+  type: sftp
+  host: "{{ env.SFTP_HOST }}"
+  user: "{{ env.SFTP_USER }}"
+  password: "{{ env.SFTP_PASSWORD }}"
+  port: 22
+  path_prefix: /upload/data/contas.csv
+  parser:
+    type: csv
+    delimiter: ','
+    quote: '"'
+    escape: '"'
+    header_line: true
+    charset: UTF-8
+    newline: LF
+    trim_if_not_quoted: false
+    allow_extra_columns: false
+    allow_optional_columns: false
+    columns:
+    - {name: num_conta, type: long}
+    - {name: cod_cliente, type: long}
+    - {name: cod_agencia, type: long}
+    - {name: cod_colaborador, type: long}
+    - {name: tipo_conta, type: string}
+    - {name: data_abertura, type: string}
+    - {name: saldo_total, type: double}
+    - {name: saldo_disponivel, type: double}
+    - {name: data_ultimo_lancamento, type: string}
+
+filters:
+  - type: add_time
+    to_column:
+      name: _ingested_at_ts
+      type: timestamp
+    from_value:
+      mode: upload_time
+
+out:
+  type: postgresql
+  host: "{{ env.DB_HOST }}"
+  user: "{{ env.DB_USER }}"
+  password: "{{ env.DB_PASSWORD }}"
+  database: "{{ env.DB_NAME }}"
+  schema: stage
+  table: stg_contas
+  mode: replace
+  port: "{{ env.DB_PORT }}"
+  driver_path: /opt/embulk/drivers/postgresql-42.7.3.jar
