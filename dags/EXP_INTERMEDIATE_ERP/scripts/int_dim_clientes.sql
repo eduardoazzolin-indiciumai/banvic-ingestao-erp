@@ -3,17 +3,32 @@ CREATE TABLE IF NOT EXISTS intermediate_erp.int_dim_clientes (
     cod_cliente INT PRIMARY KEY,
     primeiro_nome VARCHAR(150),
     ultimo_nome VARCHAR(150),
-    nome_completo VARCHAR(300),       -- Campo calculado (ótimo para BI e relatórios)
+    nome_completo VARCHAR(300),       
     email VARCHAR(255),
-    tipo_cliente CHAR(2),             -- PF ou PJ
-    data_inclusao TIMESTAMPTZ,        -- Correto: Preserva data, hora e timezone (ex: UTC)
-    cpfcnpj VARCHAR(14),              -- Limpo: Apenas números (evita problemas de máscara)
-    data_nascimento DATE,             -- Apenas DATE (nascimento não exige precisão de horas)
+    tipo_cliente CHAR(2),             
+    data_inclusao TIMESTAMPTZ,        
+    cpfcnpj VARCHAR(14),              
+    data_nascimento DATE,             
     endereco VARCHAR(500),
-    cep CHAR(8),                      -- Limpo: Apenas 8 números com zeros à esquerda se faltar
+    cep CHAR(8),                      
     _ingested_at_ts TIMESTAMP,
-    _updated_at_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Controle interno
+    _updated_at_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
+
+COMMENT ON TABLE intermediate_erp.int_dim_clientes IS 'Tabela de dimensão descritiva contendo os dados cadastrais dos clientes na camada intermediate.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.cod_cliente IS 'Código identificador único do cliente oriundo do ERP.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.primeiro_nome IS 'Primeiro nome do cliente.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.ultimo_nome IS 'Último nome ou sobrenome do cliente.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.nome_completo IS 'Nome completo do cliente, campo calculado a partir da concatenação do primeiro e último nome.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.email IS 'Endereço de e-mail de contato do cliente, padronizado em letras minúsculas.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.tipo_cliente IS 'Classificação do tipo de cliente (ex: PF para Pessoa Física, PJ para Pessoa Jurídica).';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.data_inclusao IS 'Data e hora com fuso horário em que o cliente foi cadastrado no sistema de origem.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.cpfcnpj IS 'Número de identificação fiscal do cliente (CPF ou CNPJ), contendo estritamente caracteres numéricos.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.data_nascimento IS 'Data de nascimento (para pessoas físicas) ou fundação (para pessoas jurídicas) do cliente.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.endereco IS 'Endereço físico de residência ou sede do cliente.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes.cep IS 'Código de Endereçamento Postal (CEP) do cliente, contendo apenas números e preenchido com zeros à esquerda se necessário.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes._ingested_at_ts IS 'Carimbo de data e hora indicando quando o registro foi extraído da origem e gravado na camada de staging.';
+COMMENT ON COLUMN intermediate_erp.int_dim_clientes._updated_at_ts IS 'Carimbo de data e hora de controle interno indicando a última atualização do registro nesta tabela.';
 
 -- 2. INSERIR OS DADOS TRANSFORMADOS COM UPSERT
 INSERT INTO intermediate_erp.int_dim_clientes (

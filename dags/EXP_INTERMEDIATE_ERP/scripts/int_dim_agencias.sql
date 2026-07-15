@@ -11,6 +11,17 @@ CREATE TABLE IF NOT EXISTS intermediate_erp.int_dim_agencias (
     _updated_at_ts TIMESTAMP default CURRENT_TIMESTAMP 
 );
 
+COMMENT ON TABLE intermediate_erp.int_dim_agencias IS 'Tabela de dimensão descritiva contendo os dados cadastrais das agências na camada intermediate.';
+COMMENT ON COLUMN intermediate_erp.int_dim_agencias.cod_agencia IS 'Código identificador único da agência oriunda do ERP.';
+COMMENT ON COLUMN intermediate_erp.int_dim_agencias.nome IS 'Nome de fantasia ou identificação da agência.';
+COMMENT ON COLUMN intermediate_erp.int_dim_agencias.endereco IS 'Endereço físico completo de localização da agência.';
+COMMENT ON COLUMN intermediate_erp.int_dim_agencias.cidade IS 'Cidade onde a agência está localizada.';
+COMMENT ON COLUMN intermediate_erp.int_dim_agencias.uf IS 'Sigla da Unidade Federativa (estado) onde a agência está localizada.';
+COMMENT ON COLUMN intermediate_erp.int_dim_agencias.data_abertura IS 'Data e hora do momento exato de abertura ou inauguração da agência no sistema.';
+COMMENT ON COLUMN intermediate_erp.int_dim_agencias.tipo_agencia IS 'Classificação do modelo de atendimento da agência (ex: Física, Digital).';
+COMMENT ON COLUMN intermediate_erp.int_dim_agencias._ingested_at_ts IS 'Carimbo de data e hora indicando quando o registro foi extraído da origem e gravado na camada de staging.';
+COMMENT ON COLUMN intermediate_erp.int_dim_agencias._updated_at_ts IS 'Carimbo de data e hora de controle interno indicando a última atualização do registro nesta tabela.';
+
 -- 2. INSERIR OS DADOS TRANSFORMADOS COM UPSERT
 INSERT INTO intermediate_erp.int_dim_agencias (
     cod_agencia,

@@ -9,6 +9,15 @@ CREATE TABLE IF NOT EXISTS intermediate_erp.int_fct_transacoes (
     _updated_at_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+COMMENT ON TABLE intermediate_erp.int_fct_transacoes IS 'Tabela de fatos contendo os registros de transações ou movimentações financeiras na camada intermediate.';
+COMMENT ON COLUMN intermediate_erp.int_fct_transacoes.cod_transacao IS 'Código identificador único da transação financeira oriunda do ERP.';
+COMMENT ON COLUMN intermediate_erp.int_fct_transacoes.num_conta IS 'Número identificador da conta bancária associada à transação.';
+COMMENT ON COLUMN intermediate_erp.int_fct_transacoes.data_transacao IS 'Data e hora com fuso horário em que a transação foi efetivamente realizada.';
+COMMENT ON COLUMN intermediate_erp.int_fct_transacoes.nome_transacao IS 'Nome ou descrição do tipo de transação realizada (ex: Saque, Depósito).';
+COMMENT ON COLUMN intermediate_erp.int_fct_transacoes.valor_transacao IS 'Valor monetário da transação financeira (positivo para entradas, negativo para saídas).';
+COMMENT ON COLUMN intermediate_erp.int_fct_transacoes._ingested_at_ts IS 'Carimbo de data e hora indicando quando o registro foi extraído da origem e gravado na camada de staging.';
+COMMENT ON COLUMN intermediate_erp.int_fct_transacoes._updated_at_ts IS 'Carimbo de data e hora de controle interno indicando a última atualização do registro nesta tabela.';
+
 -- 2. INSERIR OS DADOS TRANSFORMADOS COM UPSERT
 INSERT INTO intermediate_erp.int_fct_transacoes (
     cod_transacao,

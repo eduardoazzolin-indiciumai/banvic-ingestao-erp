@@ -13,6 +13,19 @@ CREATE TABLE IF NOT EXISTS intermediate_erp.int_dim_colaboradores (
     _updated_at_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
 
+COMMENT ON TABLE intermediate_erp.int_dim_colaboradores IS 'Tabela de dimensão descritiva contendo os dados cadastrais dos colaboradores na camada intermediate.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores.cod_colaborador IS 'Código identificador único do colaborador oriundo do ERP.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores.primeiro_nome IS 'Primeiro nome do colaborador.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores.ultimo_nome IS 'Último nome ou sobrenome do colaborador.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores.nome_completo IS 'Nome completo do colaborador, campo calculado a partir da concatenação do primeiro e último nome.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores.email IS 'Endereço de e-mail corporativo ou de contato do colaborador, padronizado em letras minúsculas.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores.cpf IS 'Cadastro de Pessoa Física (CPF) do colaborador, contendo estritamente caracteres numéricos.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores.data_nascimento IS 'Data de nascimento do colaborador.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores.endereco IS 'Endereço físico residencial do colaborador.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores.cep IS 'Código de Endereçamento Postal (CEP) do colaborador, contendo apenas números e preenchido com zeros à esquerda se necessário.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores._ingested_at_ts IS 'Carimbo de data e hora indicando quando o registro foi extraído da origem e gravado na camada de staging.';
+COMMENT ON COLUMN intermediate_erp.int_dim_colaboradores._updated_at_ts IS 'Carimbo de data e hora de controle interno indicando a última atualização do registro nesta tabela.';
+
 -- 2. INSERIR OS DADOS TRANSFORMADOS COM UPSERT
 INSERT INTO intermediate_erp.int_dim_colaboradores (
     cod_colaborador,
