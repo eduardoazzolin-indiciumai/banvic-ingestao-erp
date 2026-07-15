@@ -5,17 +5,11 @@ from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+
 
 DAG_DIR = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)
-
-
-def read_file_as_base64(file_name):
-    config_path = os.path.join(DAG_DIR, 'jobs', file_name)
-    with open(config_path, "rb") as f:
-        data_bytes = f.read()
-        return base64.b64encode(data_bytes).decode('utf-8')
-
 
 default_args = {
     'retries': 3,
@@ -31,18 +25,25 @@ with DAG(
     tags=["ingest", "banvic", "embulk"],
 ) as dag:
 
+    prepare_db = SQLExecuteQueryOperator(
+        task_id="prepare_db",
+        conn_id="dw_postgres",
+        sql="CREATE SCHEMA IF NOT EXISTS stage; CREATE SCHEMA IF NOT EXISTS bronze; "
+    )
+
     jobs_dir = os.path.join(DAG_DIR, 'jobs')
 
     for job_file_name in os.listdir(jobs_dir):
         job_path = os.path.join(DAG_DIR, 'jobs', job_file_name)
-        job_name_clean = job_file_name.replace(".yml", "").replace(".liquid", "")
+        job_name_clean = job_file_name.replace(
+            ".yml", "").replace(".liquid", "")
 
         with open(job_path, "rb") as f:
             data_bytes = f.read()
             config_b64 = base64.b64encode(data_bytes).decode('utf-8')
 
-        KubernetesPodOperator(
-            task_id=f"ingest_{job_name_clean}",
+        ingest_task = KubernetesPodOperator(
+            task_id=f"ingest_{job_file_name}",
             name=f'embulk-ingest-{job_name_clean}',
             namespace='airflow',
             image='embulk-ingestion:latest',
@@ -66,3 +67,5 @@ with DAG(
             is_delete_operator_pod=True,
             get_logs=True,
         )
+
+        prepare_db >> ingest_task

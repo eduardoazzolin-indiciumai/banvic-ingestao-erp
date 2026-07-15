@@ -1,8 +1,3 @@
-# Dados locais
-data/
-*.zip
-*.csv
-
 # Python e Airflow local (se houver)
 __pycache__/
 *.pyc
