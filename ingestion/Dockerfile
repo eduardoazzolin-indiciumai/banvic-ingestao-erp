@@ -6,6 +6,8 @@ ENV EMBULK_HOME=/opt/embulk
 
 COPY entrypoint.sh gem_plugins.txt ./
 
+RUN dos2unix entrypoint.sh
+
 RUN curl -o embulk -L "https://github.com/embulk/embulk/releases/download/v0.11.5/embulk-0.11.5.jar" && chmod +x ./embulk
 RUN curl -OL https://repo1.maven.org/maven2/org/jruby/jruby-complete/9.4.14.0/jruby-complete-9.4.14.0.jar
 RUN echo "jruby=file:///opt/embulk/jruby-complete-9.4.14.0.jar" >> embulk.properties
