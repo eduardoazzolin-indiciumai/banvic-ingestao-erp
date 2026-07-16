@@ -28,8 +28,8 @@ Entre as sugestões do desafio (PostgreSQL ou MinIO), foi escolhido o PostgreSQL
 
 Toda a orquestração dos containers de Embulk e do acionamento das transformações no PostgreSQL ficaram à cargo do Airflow. Foram criadas duas DAGs:
 
-- `ING_STAGE_ERP`: é acionada diariamente na madrugada e é responsável por criar pods Embulk temporários no kubernetes passando as configurações de cada extração.
-- `EXP_INTERMEDIATE_ERP`: é acionada quando a DAG de ingestão produz um _dataset airflow_ e é responsável por executar comandos SQL de transformação no PostgreSQL.
+- `ING_STAGE_ERP`: É acionada diariamente na madrugada e é responsável por criar pods Embulk temporários no kubernetes passando as configurações de cada extração. Ela itera sobre os arquivos de configuração embulk yml da pasta `dags\ING_STAGE_ERP\jobs`, criando uma task para cada um.
+- `EXP_INTERMEDIATE_ERP`: é acionada quando a DAG de ingestão produz um _dataset airflow_ e é responsável por executar comandos SQL de transformação no PostgreSQL. Ela itera sobre os arquivos SQL da pasta `dags\EXP_INTERMEDIATE_ERP\scripts`, criando uma task para cada um. As transformações consistem na passagem do schema `staging_erp` para `intermediate_erp` de forma _upsert_, fazendo limpezas simples nas colunas e modelando em star schema.
 
 > ℹ️ **Débito técnico**: para simplificar o projeto sem deixar o repositório público, durante a criação dos pods do Airflow, as DAGs são copiadas com o comando `cp` para dentro do ambiente. Em cenários de produção seria utilizado abordagens como `Git-Sync` para sincronizar as dags com o repositório online.
 
@@ -68,7 +68,6 @@ banvic_dw (Database)
             ├── stg_propostas_credito
             └── stg_transacoes
 ```
-
 
 ## 🚀 Instalação e Configuração
 
